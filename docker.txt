@@ -1,0 +1,67 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = 'sambit1996/spring'
+        CONTAINER_NAME = 'spring'
+    }
+    stages {
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+        stage('Clone Repository') {
+            steps {
+                sh 'git clone https://github.com/sambit-8490/springboot-PJ2.git'
+            }
+        }
+        stage('Clean Up Existing Containers') {
+            steps {
+                script {
+                    sh """
+                    # Stop and remove existing container
+                    if [ \$(docker ps -a -q -f name=${CONTAINER_NAME}) ]; then
+                        docker stop ${CONTAINER_NAME}
+                        docker rm ${CONTAINER_NAME}
+                    fi
+                    """
+                }
+            }
+        }
+        stage('Remove Old Image') {
+            steps {
+                script {
+                    sh """
+                    # Remove existing Docker image
+                    if [ \$(docker images -q ${IMAGE_NAME}) ]; then
+                        docker rmi -f ${IMAGE_NAME}
+                    fi
+                    """
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build the Docker image
+                    sh 'docker build -t ${IMAGE_NAME} -f springboot-PJ2/Dockerfile springboot-PJ2/'
+                }
+            }
+        }
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    // Run the Docker container
+                    sh 'docker run --name ${CONTAINER_NAME} -d -p 1234:9090 ${IMAGE_NAME}'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline complete."
+        }
+    }
+}

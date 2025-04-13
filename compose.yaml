@@ -1,0 +1,26 @@
+services:
+  webserver1:
+         image: jenkins/jenkins
+         ports:
+             - 1200:8080
+         volumes:
+             - /home/sambit/Desktop/jenkins/volume-1:/var/jenkins_home
+         networks:
+              - demo 
+  webserver2:
+        image: jenkins/jenkins
+        ports:
+            - 1300:8080
+        volumes:
+            - /home/sambit/Desktop/jenkins/volume-1:/var/jenkins_home
+        networks:
+              - demo
+
+
+networks:
+  demo:
+    driver: bridge
+
+#networks:
+#  networkname:
+ #   driver: bridge
