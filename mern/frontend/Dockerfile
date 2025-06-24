@@ -1,23 +1,23 @@
-# Use the official image as a parent image
-# Description: Dockerfile for the client side of the MERN stack application
+# Stage 1: Build the React frontend
+FROM node:18-slim AS builder
 
-# Use the official image as a parent image
-FROM node:slim
-
-# Set the working directory
 WORKDIR /app
 
-# Copy the file from your host to your current location
-COPY package.json .
-
-# Run the command inside your image filesystem
+COPY package.json package-lock.json ./
 RUN npm install
 
-# Inform Docker that the container is listening on the specified port at runtime
-EXPOSE 5173
-
-# Copy the rest of your app's source code from your host to your image filesystem
 COPY . .
+RUN npm run build
 
-# Run the specified command within the container
-CMD ["npm", "run", "dev"]
+# Stage 2: Serve with Nginx
+FROM nginx:alpine
+
+# Copy the built files from previous stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Remove default nginx config and replace with custom (optional)
+# COPY nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
